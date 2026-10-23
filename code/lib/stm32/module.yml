@@ -1,0 +1,3 @@
+name: a2k_lib_stm32
+build:
+  cmake: .

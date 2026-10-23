@@ -1,0 +1,81 @@
+menu "a2k board drivers"
+
+config AW2_BACKLIGHT
+    bool "Backlight PWM (TIM1_CH1 / PA8)"
+    depends on PWM
+
+config AW2_LCD
+    bool "ILI9341 display via FSMC"
+    depends on DISPLAY
+
+config AW2_LCD_DEBUG
+    bool "LCD colour-corner bring-up test (disable in production)"
+    depends on AW2_LCD
+
+config AW2_LCD_DMA
+        bool "LCD DMA transfer backend"
+        depends on AW2_LCD && DMA
+        help
+            Enables DMA-backed LCD flush/fill transfers in the ILI9341 FSMC driver.
+            Use on real hardware; Renode remains on polled transfers by default.
+
+config AW2_FPGA
+    bool "MachXO2 FPGA runtime SPI driver"
+    depends on SPI
+
+config AW2_AWG
+    bool "AWG output via FPGA DDS registers"
+    depends on AW2_FPGA
+
+config AW2_DMM
+    bool "CS7721 DMM driver"
+    depends on SERIAL
+
+config AW2_USB
+    bool "USB scope protocol (a2k bulk)"
+    depends on USB_DEVICE_STACK
+
+config AW2_USB_DIAG
+    bool "USB CDC diagnostic serial logger"
+    depends on AW2_USB && USB_CDC_ACM && SHELL
+    default y
+    help
+      Adds a dedicated USB CDC ACM diagnostic log stream.
+      Use shell command "usbdiag fmt native|oem" to switch output format.
+
+config AW2_USB_DIAG_OEM_DEFAULT
+    bool "Default USB diagnostic format to OEM-compatible"
+    depends on AW2_USB_DIAG
+    help
+      When enabled, USB diagnostic logging starts in OEM-compatible mode.
+
+config AW2_BATTERY
+    bool "Battery voltage ADC"
+    depends on ADC
+
+config AW2_CALIBRATION
+    bool "Calibration NVS load/save"
+    depends on NVS
+
+config AW2_KEYPAD
+    bool "5×4 GPIO key matrix (gpio-kbd-matrix)"
+    depends on INPUT_GPIO_KBD_MATRIX
+
+config AW2_PROBE_COMP
+    bool "Probe compensation GPIO"
+    depends on GPIO
+
+config AW2_HW_VALIDATED
+    bool "Enable hardware-only code paths (disable for Renode)"
+    help
+      Gates code that is wrong or meaningless in Renode: real FPGA
+      capture burst, DMM USART, battery ADC auto-zero, calibration
+      flash writes. Leave disabled when testing under Renode.
+
+config AW2_RENODE_DETECT
+    bool "Runtime Renode/hardware detection via sentinel"
+    help
+      Reads 0x50000000 (unmapped on STM32F103, returns magic in Renode)
+      to detect if running under Renode. Stores result in g_is_renode.
+
+endmenu

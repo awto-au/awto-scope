@@ -1,0 +1,17 @@
+zephyr_library()
+zephyr_library_sources(
+    src/ui/layout.c
+    src/ui/channel.c
+    src/ui/tile.c
+    src/ui/screen_mgr.c
+    src/ui/softkey.c
+    src/dsp/measure.c
+    src/dsp/waveform.c
+    stm32/src/dma_fill.c
+    stm32/src/fsmc.c
+    zephyr/src/display_bridge.c
+    zephyr/src/lvgl_task.c
+)
+zephyr_include_directories(include)
+zephyr_include_directories(stm32/include)
+zephyr_include_directories(zephyr/include)

@@ -1,0 +1,7 @@
+config A2K_DISPLAY_BRIDGE
+    bool "a2k display bridge (Zephyr display API → LVGL)"
+    depends on DISPLAY
+
+config A2K_LVGL_TASK
+    bool "a2k LVGL task integration"
+    depends on LVGL

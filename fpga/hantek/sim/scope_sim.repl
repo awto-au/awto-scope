@@ -1,0 +1,15 @@
+// ScopeSimBridge overlay — forward the STM32's SPI1 to the live aw2_gateware gateware
+// simulation (scope_sim_server.py) over a socket. Include this AFTER the base
+// STM32F103 platform, and load the ScopeSimBridge.cs assembly first (see README.md).
+//
+// Start the sim server before the machine:
+//     python3 fpga/sim/scope_sim_server.py --port 42001
+
+scopeSim: Video.ScopeSimBridge @ sysbus <0x40013000, +0x400>
+    host: "127.0.0.1"
+    port: 42001
+
+// The firmware drives chip-select on GPIOA PA4; route that edge to the bridge so it
+// can frame SPI-v2 transactions (the slave resets its phase on CS high).
+gpioPortA:
+    4 -> scopeSim@0

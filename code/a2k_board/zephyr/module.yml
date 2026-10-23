@@ -1,0 +1,6 @@
+name: a2k_board
+build:
+  cmake: .
+  kconfig: Kconfig
+  settings:
+    dts_root: .

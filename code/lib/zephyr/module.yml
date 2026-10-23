@@ -1,0 +1,6 @@
+name: a2k_lib
+build:
+  cmake: .
+  kconfig: Kconfig
+  settings:
+    dts_root: .

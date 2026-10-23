@@ -1,0 +1,9 @@
+description: ILI9341 TFT LCD via STM32 FSMC Bank1 (memory-mapped parallel interface)
+
+compatible: "a2k,ili9341-fsmc"
+
+include: display-controller.yaml
+
+properties:
+  reg:
+    required: true
