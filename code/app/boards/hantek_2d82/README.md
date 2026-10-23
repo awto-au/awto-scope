@@ -2,7 +2,7 @@
 
 A **clean-room starting point** for writing your own Zephyr firmware for the Hantek
 2000-series (2D82AUTO / 2D72 / 2D42 / 2C72 / 2C42). Built from firmware RE — see
-`../../../vendors/hantek/2d82/docs/hardware/devices/hantek-2000-IO-MAP.md`.
+[docs/hantek/](../../../../docs/hantek/).
 
 ## What's SOLID (verified in firmware / community)
 - **SoC = STM32F103VET6** → Zephyr `stm32f103Xe.dtsi` (exact match; FSMC present).
@@ -10,7 +10,7 @@ A **clean-room starting point** for writing your own Zephyr firmware for the Han
   you flash: F1+Power = DFU entry), your **app @0x08005000**. Partitions in the dts.
   This is the default (Option B, plain `west build`). An MCUboot variant (Option C,
   app @0x0800C000, `west build --sysbuild -- -DSNIPPET=mcuboot-hantek_2d82 ...`) is
-  also buildable — see `../../../vendors/hantek/2d82/docs/firmware/flash-layout.md` for both.
+  also buildable — see `../../../../docs/hantek/flash-layout.md` for both.
 - **USB FS device** present (DFU + the already-RE'd control protocol — VID 0x0483
   PID 0x2d42, see hkoosha/hanteker `hanteker_lib`).
 - **TTL UART debug port** exists (the "Program Arm1" 3.3 V header) → console.
@@ -19,12 +19,12 @@ UART note: keep the console on USART1 (PA9/PA10), but baud rate does not need to
 mirror OEM settings. 115200 is a known-good default, and higher/lower rates are
 valid for development if host tooling is configured to match.
 
-USB diagnostics note: first_stage now exposes a USB CDC ACM diagnostic serial port
+USB diagnostics note: app now exposes a USB CDC ACM diagnostic serial port
 (`CDC_ACM_0`) in parallel with the UART console. Diagnostic format is runtime-
 switchable from shell using `usbdiag fmt native` or `usbdiag fmt oem`.
 
 DMA note: default `prj.conf` keeps DMA off for Renode-safe bring-up. To test DMA-backed
-paths, build with `code/first_stage/prj_dma.conf` via `-DEXTRA_CONF_FILE=prj_dma.conf`.
+paths, build with `code/app/prj_dma.conf` via `-DEXTRA_CONF_FILE=prj_dma.conf`.
 - **FSMC used for ONE device = the LCD** (parallel TFT @0x60000000); init in
   `FUN_08019488`/`FUN_08019562`.
 - **FPGA = GPIO/SPI, NOT memory-mapped** (heavy GPIO use; corrected finding).

@@ -1,5 +1,5 @@
 /*
- * first_stage application overlay for hantek_2d82.
+ * app application overlay for hantek_2d82.
  * Disables peripherals not needed for first-stage bring-up: watchdog
  * (not fed → would reset), and the
  * custom FPGA/DMM/capture nodes (no drivers compiled in yet — disabling
@@ -17,7 +17,7 @@
 		 * same treatment pointed at slot0_partition, or CONFIG_FLASH_LOAD_OFFSET
 		 * silently falls back to 0 (app links on top of MCUboot — found
 		 * during Renode build verification of the Option C variant). See
-		 * vendors/hantek/2d82/docs/firmware/flash-layout.md, "Option C" and
+		 * docs/hantek/flash-layout.md, "Option C" and
 		 * snippets/mcuboot-hantek_2d82/boards/hantek_2d82.overlay for the
 		 * partition table this label resolves against under Option C. */
 		zephyr,code-partition = &slot0_partition;

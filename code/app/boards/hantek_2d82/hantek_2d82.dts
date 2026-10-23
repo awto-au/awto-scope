@@ -2,7 +2,7 @@
  * Hantek 2000-series handheld scope (2D82AUTO / 2D72 / 2D42 / 2C72 / 2C42)
  * Zephyr board devicetree — a STARTING POINT for clean-room firmware.
  *
- * Derived from firmware reverse-engineering (see ../../docs/.../hantek-2000-IO-MAP.md):
+ * Derived from firmware reverse-engineering (see docs/hantek/):
  *   MCU   STM32F103VET6  (Cortex-M3, 512K flash / 64K RAM, 100-pin, HAS FSMC)
  *   FPGA  Lattice MachXO2 (capture engine) -- GPIO/SPI control (NOT memory-mapped)
  *   ADC   AD9288 dual 8-bit 40MSPS -> FPGA (not MCU)
@@ -66,9 +66,9 @@
 	 *   PB6   PB5   PC6   PB12
 	 *
 	 * Physical key → (row,col) mapping CONFIRMED from vendor-firmware RE.
-	 * See vendors/hantek/2d82/docs/hardware/gpio-pinout.md, "Keypad matrix (full)" table, and
-	 * vendors/hantek/2d82/emulation/a2k_board/src/keypad.c (key = OEM_row*4 + OEM_col + 1, decoded
-	 * from ABS_X=col-gpio-idx=OEM row, ABS_Y=row-gpio-idx=OEM col). Pin
+	 * See docs/hantek/gpio-pinout.md, "Keypad matrix (full)" table, and
+	 * key = OEM_row*4 + OEM_col + 1, decoded from ABS_X=col-gpio-idx=OEM row,
+	 * ABS_Y=row-gpio-idx=OEM col. Pin
 	 * ordering below (col-gpios = Row1..Row5, row-gpios = ColA..ColD) has
 	 * been cross-checked against that table and is consistent. */
 	kscan0: kscan {
