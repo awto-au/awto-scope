@@ -1,0 +1,16 @@
+name: mcuboot-hantek_2d82
+description: >
+  Option C flash layout for hantek_2d82 — single-slot MCUboot bootloader
+  replacing the vendor DFU bootloader. Applies the same partition overlay and
+  Kconfig fragment to BOTH the MCUboot image and the first_stage app image (a
+  snippet is required, rather than a plain --extra-dtc-overlay, specifically
+  so the two images can't disagree about where slot0 starts). See
+  vendors/hantek/2d82/docs/firmware/flash-layout.md, "Option C", for the full picture.
+
+append:
+  EXTRA_CONF_FILE: mcuboot-hantek_2d82.conf
+
+boards:
+  hantek_2d82/stm32f103xe:
+    append:
+      EXTRA_DTC_OVERLAY_FILE: boards/hantek_2d82.overlay

@@ -1,0 +1,67 @@
+/*
+ * MCUboot flash-partition overlay for hantek_2d82 — Option C variant.
+ * Applied to BOTH the mcuboot image and the first_stage app image (via the
+ * mcuboot-hantek_2d82 snippet, so they can't disagree about the layout).
+ *
+ * Replaces the Option B (vendor-DFU-preserving) partition table in
+ * hantek_2d82.dts with a single-slot MCUboot layout:
+ *
+ *   0x08000000  mcuboot    48 KB  (0xC000)
+ *   0x0800C000  slot0/app 460 KB  (0x73000)  <- first_stage links here
+ *   0x0807F000  nvs         4 KB  (0x1000)
+ *
+ * MCUboot's real footprint here (ED25519 + software SHA256 via mbedTLS, no
+ * hardware crypto on this MCU, log level WRN, serial recovery NOT yet
+ * enabled — see sysbuild/mcuboot.conf) measured at ~43.5 KB during Renode
+ * build verification (32 KB overflowed by 11548 B) — 48 KB gives sector-
+ * aligned headroom (2KB erase sectors on this part) for that plus any log
+ * level / feature growth without immediately re-tuning this overlay again.
+ *
+ * No slot1/scratch: MCUBOOT_MODE_SINGLE_APP does not support in-field OTA —
+ * intended update path is MCUboot's own serial recovery (USART1), NOT YET
+ * enabled (see sysbuild/mcuboot.conf for why) — until it is, Option C
+ * updates require SWD, same as Option A. See vendors/hantek/2d82/docs/firmware/flash-layout.md,
+ * "Option C" for the full picture.
+ *
+ * Not used by the default (Option B) build — hantek_2d82.dts's own &flash0
+ * partitions node (20 KB vendor-bootloader-preserving layout) is untouched
+ * and remains the default for a plain `west build` without --sysbuild.
+ */
+
+/delete-node/ &boot_partition;
+/delete-node/ &slot0_partition;
+/delete-node/ &nvs_partition;
+
+/* NOTE: no zephyr,code-partition chosen node here. This overlay (via the
+ * snippet) is applied to BOTH the mcuboot image and the first_stage app
+ * image — a chosen override here would apply to both identically, but the
+ * two need DIFFERENT code-partitions (mcuboot -> boot_partition, app ->
+ * slot0_partition). MCUboot's own build (ExternalZephyrProject_Add
+ * APP_TYPE BOOTLOADER) sets its own zephyr,code-partition = &boot_partition
+ * internally; the app side sets zephyr,code-partition = &slot0_partition in
+ * its own boards/hantek_2d82.overlay (first_stage/boards/, not this
+ * snippet's boards/) — found the hard way during Renode build verification:
+ * putting it here made MCUboot itself link at slot0's address (0x0800C000)
+ * instead of 0x08000000. */
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		boot_partition: partition@0 {
+			label = "mcuboot";
+			reg = <0x00000000 0x0000C000>;    /* 48 KB */
+			read-only;
+		};
+		slot0_partition: partition@c000 {
+			label = "image-0";                /* first_stage links here */
+			reg = <0x0000C000 0x00073000>;    /* 460 KB — 4KB carved off end for NVS */
+		};
+		nvs_partition: partition@7f000 {
+			label = "nvs";
+			reg = <0x0007F000 0x00001000>;    /* 4 KB NVS at top of flash */
+		};
+	};
+};

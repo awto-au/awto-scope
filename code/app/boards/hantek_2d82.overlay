@@ -1,0 +1,47 @@
+/*
+ * first_stage application overlay for hantek_2d82.
+ * Disables peripherals not needed for first-stage bring-up: watchdog
+ * (not fed → would reset), and the
+ * custom FPGA/DMM/capture nodes (no drivers compiled in yet — disabling
+ * avoids DTS binding warnings).
+ */
+
+/ {
+	chosen {
+		/* Only consulted when CONFIG_BOOTLOADER_MCUBOOT selects
+		 * CONFIG_USE_DT_CODE_PARTITION (Option C / mcuboot-hantek_2d82
+		 * snippet build) — inert for the default Option B build, where
+		 * CONFIG_FLASH_LOAD_OFFSET=0x5000 (prj.conf) is used directly instead.
+		 * Mirrors MCUboot's own boot/zephyr/app.overlay, which sets this to
+		 * &boot_partition for the mcuboot image itself; the app needs the
+		 * same treatment pointed at slot0_partition, or CONFIG_FLASH_LOAD_OFFSET
+		 * silently falls back to 0 (app links on top of MCUboot — found
+		 * during Renode build verification of the Option C variant). See
+		 * vendors/hantek/2d82/docs/firmware/flash-layout.md, "Option C" and
+		 * snippets/mcuboot-hantek_2d82/boards/hantek_2d82.overlay for the
+		 * partition table this label resolves against under Option C. */
+		zephyr,code-partition = &slot0_partition;
+	};
+};
+
+&iwdg {
+	status = "disabled";
+};
+
+/* Disable custom-compatible nodes that have no Zephyr binding yet. */
+&fpga {
+	status = "disabled";
+};
+
+&dmm {
+	status = "disabled";
+};
+
+&capture {
+	status = "disabled";
+};
+
+/* adc1 in board DTS has pinctrl-names but no pinctrl-0 — disable until ADC is needed. */
+&adc1 {
+	status = "disabled";
+};

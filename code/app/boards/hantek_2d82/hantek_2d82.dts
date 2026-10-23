@@ -1,0 +1,306 @@
+/*
+ * Hantek 2000-series handheld scope (2D82AUTO / 2D72 / 2D42 / 2C72 / 2C42)
+ * Zephyr board devicetree — a STARTING POINT for clean-room firmware.
+ *
+ * Derived from firmware reverse-engineering (see ../../docs/.../hantek-2000-IO-MAP.md):
+ *   MCU   STM32F103VET6  (Cortex-M3, 512K flash / 64K RAM, 100-pin, HAS FSMC)
+ *   FPGA  Lattice MachXO2 (capture engine) -- GPIO/SPI control (NOT memory-mapped)
+ *   ADC   AD9288 dual 8-bit 40MSPS -> FPGA (not MCU)
+ *   DAC   3PD5651E 12-bit parallel (=DAC902) -- AWG, streamed by FPGA
+ *   DMM   CS7721 ICL7106-class dual-slope ADC -- slow serial read
+ *   AMP   EL5166/LMH6702 -- AWG output buffer (analog)
+ *   LCD   parallel TFT on FSMC bank1 @0x60000000 (reads pGLCD_ID at init)
+ *   Keys  F1-F4 + arrows + Power (GPIO scan; F1+Power = DFU entry)
+ *
+ * VERIFIED markers:  [V]=seen in firmware  [?]=inferred, NEEDS board tracing.
+ * Pin numbers below are PLACEHOLDERS [?] -- trace the PCB / read the firmware GPIO
+ * init to fill real ports. The app at 0x08005000 (20K bootloader); see /chosen.
+ */
+
+/dts-v1/;
+#include <st/f1/stm32f103Xe.dtsi>
+#include <st/f1/stm32f103v(c-d-e)tx-pinctrl.dtsi>
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/pwm/pwm.h>
+
+/ {
+	model = "Hantek 2000-series handheld scope (STM32F103VET6)";
+	compatible = "hantek,2d82", "st,stm32f103";
+
+	chosen {
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		/* console: a TTL/UART debug port exists (the 'Program Arm1' 3.3V header) [V] */
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
+		zephyr,keyboard-scan = &kscan0;
+	};
+
+	/* LCD backlight: PA8 = TIM1_CH1 [V]. Buzzer: PC7 = TIM8_CH2 [V] (PSC=719 ARR=32 → 3030 Hz).
+	 * Both driven via PWM so the clean-room firmware can match OEM behaviour. */
+	pwm_leds: pwm-leds {
+		compatible = "pwm-leds";
+		backlight: backlight {
+			pwms = <&pwm1 1 PWM_MSEC(1) PWM_POLARITY_NORMAL>;
+			label = "LCD_BACKLIGHT";
+		};
+	};
+
+	pwm_buzzers: pwm-buzzers {
+		compatible = "pwm-leds";
+		buzzer: buzzer {
+			pwms = <&pwm8 2 PWM_USEC(330) PWM_POLARITY_NORMAL>;
+			label = "BUZZER";
+		};
+	};
+
+	/* 5×4 scanned key matrix = 20 keys.  All pins CONFIRMED from firmware.
+	 *
+	 * Zephyr gpio-kbd-matrix drives col-gpios as outputs (one low at a time)
+	 * and reads row-gpios as inputs.  The OEM does the opposite (rows=outputs,
+	 * cols=inputs) — so we swap here: OEM rows → col-gpios, OEM cols → row-gpios.
+	 *
+	 * OEM rows (now col-gpios, scan outputs, active-low, no pull):
+	 *   PD13  PD12  PC3  PB14  PB13
+	 * OEM cols (now row-gpios, read inputs, active-low, pull-up to detect press):
+	 *   PB6   PB5   PC6   PB12
+	 *
+	 * Physical key → (row,col) mapping CONFIRMED from vendor-firmware RE.
+	 * See vendors/hantek/2d82/docs/hardware/gpio-pinout.md, "Keypad matrix (full)" table, and
+	 * vendors/hantek/2d82/emulation/a2k_board/src/keypad.c (key = OEM_row*4 + OEM_col + 1, decoded
+	 * from ABS_X=col-gpio-idx=OEM row, ABS_Y=row-gpio-idx=OEM col). Pin
+	 * ordering below (col-gpios = Row1..Row5, row-gpios = ColA..ColD) has
+	 * been cross-checked against that table and is consistent. */
+	kscan0: kscan {
+		compatible = "gpio-kbd-matrix";
+		status = "okay";
+		col-gpios = <&gpiod 13 GPIO_ACTIVE_LOW>,
+		            <&gpiod 12 GPIO_ACTIVE_LOW>,
+		            <&gpioc 3  GPIO_ACTIVE_LOW>,
+		            <&gpiob 14 GPIO_ACTIVE_LOW>,
+		            <&gpiob 13 GPIO_ACTIVE_LOW>;
+		row-gpios = <&gpiob 6  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>,
+		            <&gpiob 5  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>,
+		            <&gpioc 6  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>,
+		            <&gpiob 12 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+		no-ghostkey-check;
+		/* idle-mode defaults to "interrupt", which requires EVERY row-gpio to
+		 * arm its own EXTI line. STM32 EXTI lines are shared by pin NUMBER
+		 * across all ports (only one port can own EXTIn at a time). PB6 and
+		 * PC6 both use bit 6, so the driver's per-row interrupt-configure loop
+		 * (input_gpio_kbd_matrix.c: gpio_kbd_matrix_set_detect_mode) succeeds
+		 * on PB6 then fails with -EBUSY on PC6 — confirmed via Renode boot log
+		 * ("input_gpio_kbd_matrix: Pin 2 interrupt configuration failed: -16").
+		 * Net effect: once the matrix goes idle (100ms, poll-timeout-ms
+		 * default), only the PB6 row can wake it via interrupt — presses on
+		 * the PB5/PC6/PB12 rows would never be detected again after the first
+		 * idle timeout. "poll" mode sidesteps EXTI entirely (periodic
+		 * re-check via k_work_delayable) and needs no pin-level change. */
+		idle-mode = "poll";
+	};
+
+	/* MachXO2 FPGA control lines (GPIO bit-bang, NOT FSMC). [V: heavy GPIO; ?: pins]
+	 * Runtime: MCU writes config (sample-rate/trigger/AWG-table) + reads capture.
+	 * Config/update: JTAG (TCK/TMS/TDI/TDO) bit-banged from GPIO. */
+	fpga: fpga-ctrl {
+		compatible = "hantek,machxo2-ctrl";   /* custom driver to write */
+		/* control/handshake — placeholders, fill from GPIO init trace */
+		nconfig-gpios = <&gpioc 0 GPIO_ACTIVE_LOW>;
+		cdone-gpios   = <&gpioc 1 GPIO_ACTIVE_HIGH>;
+		/* JTAG for bitstream update */
+		jtag-tck-gpios = <&gpiob 0 GPIO_ACTIVE_HIGH>;
+		jtag-tms-gpios = <&gpiob 1 GPIO_ACTIVE_HIGH>;
+		jtag-tdi-gpios = <&gpiob 2 GPIO_ACTIVE_HIGH>;
+		jtag-tdo-gpios = <&gpiob 3 GPIO_ACTIVE_HIGH>;
+	};
+
+	/* DMM front-end (CS7721, ICL7106-class). Slow serial result + range/func GPIOs.
+	 * [V: low-traffic serial; ?: which bus/pins] */
+	dmm: cs7721 {
+		compatible = "hantek,cs7721-dmm";    /* custom driver to write */
+		/* if on SPI1: make it a spi child instead; if bit-bang, list gpios here */
+		status = "okay";
+	};
+
+	/* Scope analog-capture front-end: AD9288 dual 8-bit ADC -> MachXO2 FPGA -> MCU.
+	 * The MCU's ADC1 + DMA1 participate in the local capture path.
+	 * Modelled as a node for the (new) capture driver; not a Zephyr adc binding. [V] */
+	capture: scope-capture {
+		compatible = "hantek,scope-capture";   /* custom driver to write */
+		status = "okay";
+		/* AD9288 is read by the FPGA, not the MCU; MCU ADC1+DMA1 are the local path */
+	};
+
+	aliases {
+		backlight = &backlight;
+		buzzer    = &buzzer;
+		lcd-reset = &lcd_reset;
+	};
+
+	gpio_keys: gpio-keys {
+		compatible = "gpio-keys";
+		lcd_reset: lcd-reset {
+			gpios = <&gpiod 3 GPIO_ACTIVE_LOW>;  /* PD3 = ILI9341 RESET# [V] */
+			label = "LCD_RESET";
+			zephyr,code = <0>;
+		};
+	};
+};
+
+/* ---- Clocks ----
+ * The board runs SYSCLK = 72 MHz from an 8 MHz HSE crystal via PLL x9
+ *   (AHB 72, APB1 36, APB2 72). [V] confirmed from the clock-config registers.
+ */
+&clk_hse {
+	clock-frequency = <DT_FREQ_M(8)>;   /* 8 MHz crystal [V, from PLLx9->72MHz] */
+	status = "okay";
+};
+
+&pll {
+	mul = <9>;                          /* x9 [V]: 8MHz HSE → 72MHz SYSCLK */
+	clocks = <&clk_hse>;
+	status = "okay";
+};
+
+&rcc {
+	clocks = <&pll>;
+	clock-frequency = <DT_FREQ_M(72)>;  /* SYSCLK 72 MHz [V] */
+	ahb-prescaler = <1>;
+	apb1-prescaler = <2>;               /* APB1 36 MHz [V] */
+	apb2-prescaler = <1>;               /* APB2 72 MHz [V] */
+};
+
+/* ---- Peripherals (literal-pool refs from firmware show which are used) ----
+ * Peripherals present/used on this board: ADC1, DMA1, DMA2, SPI1, USART1, USART2,
+ * AFIO, FLASH, FSMC, GPIOA-E, TIM1/3/4/5. Enable the ones the new firmware uses: */
+
+&usart1 {                 /* [V] TTL debug/console (3.3V) + STM32 serial bootloader */
+	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&usart2 {                 /* [V] CS7721 DMM serial: PA3 RX @ 2400 8N1 (PA2 TX optional) */
+	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3>;
+	pinctrl-names = "default";
+	current-speed = <2400>;
+	status = "okay";
+};
+
+&spi1 {                   /* [V] 2 refs -- FPGA config and/or CS7721 DMM serial */
+	/* STM32F1 pinctrl uses _master_/_slave_ suffix for SPI direction */
+	pinctrl-0 = <&spi1_sck_master_pa5 &spi1_miso_master_pa6 &spi1_mosi_master_pa7>;
+	pinctrl-names = "default";
+	status = "disabled";      /* not needed for first stage; enable when FPGA/DMM driver added */
+	/* cs-gpios = <...>;  add FPGA / DMM chip-selects when traced */
+};
+
+&usb {                    /* [V] USB FS device -- DFU + the Hantek USB control protocol
+                           * (already RE'd: VID 0x0483 PID 0x2d42, EP2 out / EP1 in,
+                           * 9-byte frame; see hkoosha/hanteker hanteker_lib)
+                           * STM32F103 label is &usb (not &usbd which is a different binding) */
+	status = "okay";
+
+	cdc_acm_uart0: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+		label = "CDC_ACM_0";
+	};
+};
+
+/* FSMC LCD — ILI9341 320×240 RGB565 via FSMC Bank1.
+ * cmd @ 0x60000000 (A16=0), data @ 0x60020000 (A16=1).
+ * No Zephyr FSMC binding exists for STM32F1; driver uses direct MMIO.
+ * compatible = "a2k,ili9341-fsmc" matches the binding in a2k_board/dts/bindings/. */
+/ {
+	chosen {
+		zephyr,display = &ili9341_fsmc;
+	};
+
+	ili9341_fsmc: ili9341_fsmc@60000000 {
+		compatible = "a2k,ili9341-fsmc";
+		reg = <0x60000000 0x40000>;   /* cmd+data window */
+		width = <320>;
+		height = <240>;
+		status = "okay";
+	};
+};
+
+&adc1 {                   /* [V] local ADC (battery/supply sense); scope ADC is the AD9288 on the FPGA */
+	/* pinctrl-0 not set yet — ADC channel pins need tracing before enabling */
+	status = "okay";
+};
+
+&dma1 {                   /* [V] used by the capture path (ADC->mem) */
+	status = "okay";
+};
+
+&dma2 {                   /* [V] used (LCD/data movement) */
+	status = "okay";
+};
+
+&timers1 {                /* [V] TIM1_CH1 → PA8 LCD backlight PWM */
+	status = "okay";
+	st,prescaler = <1>;   /* PSC=1 → 36MHz tick; 1ms period = 36000 counts < 65535 */
+	pwm1: pwm {
+		compatible = "st,stm32-pwm";
+		/* clocks come from the parent &timers1 node (already has bus +
+		 * TIMPCLK2 in stm32f1.dtsi) — child clocks are ignored by the driver */
+		pinctrl-0 = <&tim1_ch1_pwm_out_pa8>;
+		pinctrl-names = "default";
+		#pwm-cells = <3>;
+		status = "okay";
+	};
+};
+
+&timers8 {                /* [V] TIM8_CH2 → PC7 buzzer PWM */
+	status = "okay";
+	st,prescaler = <0>;
+	/* pwm_stm32 reads clocks from THIS parent node (DT_INST_PARENT), not the
+	 * pwm child. SoC dtsi (stm32f103Xc) only lists the bus clock here — the
+	 * TIMPCLK domain clock must be added or pwm init fails with
+	 * "Timer clock source is not specified". timers1 already has both in
+	 * stm32f1.dtsi. */
+	clocks = <&rcc STM32_CLOCK(APB2, 13)>,
+	         <&rcc STM32_SRC_TIMPCLK2 NO_SEL>;
+	pwm8: pwm {
+		compatible = "st,stm32-pwm";
+		pinctrl-0 = <&tim8_ch2_pwm_out_pc7>;
+		pinctrl-names = "default";
+		#pwm-cells = <3>;
+		status = "okay";
+	};
+};
+
+&iwdg {
+	status = "okay";
+};
+
+/* Renode testing: expand SRAM to 1MB so heap/stack sizes are not constrained.
+ * Real HW has 64KB; this override is only for emulation convenience. */
+&sram0 {
+	reg = <0x20000000 0x100000>;   /* 1MB for Renode testing */
+};
+
+/* Flash layout: 20K custom DFU bootloader @0x08000000, app @0x08005000. [V] */
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		boot_partition: partition@0 {
+			label = "hantek-dfu-bootloader";  /* vendor DFU, leave intact */
+			reg = <0x00000000 0x00005000>;    /* 20 KB */
+			read-only;
+		};
+		slot0_partition: partition@5000 {
+			label = "image-0";                /* your firmware goes here */
+			reg = <0x00005000 0x0007A000>;    /* ~488 KB — 4KB carved off end for NVS */
+		};
+		nvs_partition: partition@7f000 {
+			label = "nvs";
+			reg = <0x0007F000 0x00001000>;    /* 4 KB NVS at top of flash */
+		};
+	};
+};

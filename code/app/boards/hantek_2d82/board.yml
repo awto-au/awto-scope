@@ -1,0 +1,6 @@
+board:
+  name: hantek_2d82
+  full_name: Hantek 2000-series handheld scope (STM32F103VET6)
+  vendor: hantek
+  socs:
+    - name: stm32f103xe
