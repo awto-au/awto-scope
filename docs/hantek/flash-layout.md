@@ -1,6 +1,6 @@
-# Flash layout options -- first_stage
+# Flash layout options -- app
 
-Two buildable variants of `code/first_stage`, chosen at build time, plus a documented
+Two buildable variants of `code/app`, chosen at build time, plus a documented
 (not-yet-implemented) direct-flash option. See [issue #39](https://github.com/awtoau/awto-2000/issues/39)
 for the original discussion.
 
@@ -22,30 +22,27 @@ situation:
 ## Option B -- Vendor DFU bootloader (plain `west build`, no `--sysbuild`)
 
 Vendor bootloader occupies `0x08000000`-`0x08004FFF` (20 KB, MD5 `629ec3f9`).
-App links at `0x08005000` via `CONFIG_FLASH_LOAD_OFFSET=0x5000` (`code/first_stage/prj.conf`).
-This is the plain, non-sysbuild `first_stage` build — nothing about it changed in the
+App links at `0x08005000` via `CONFIG_FLASH_LOAD_OFFSET=0x5000` (`code/app/prj.conf`).
+This is the plain, non-sysbuild `app` build — nothing about it changed in the
 Option C work below.
 
 **DFU entry:** hold **F1** while powering on -> release when RUN/STOP LED flashes -> plug USB.
 
 ```bash
-# Build (uses esp32-zephyr workspace; see tools/scripts/build_first_stage.py)
-cd ~/git/esp32-zephyr && source zephyr/zephyr-env.sh
-west build -b hantek_2d82 /path/to/awto-2000/code/first_stage \
-  --build-dir /path/to/awto-2000/tmp/first_stage_build
-
-# Or via the convenience script from the repo root:
-python3 tools/scripts/build_first_stage.py
+# Build from a Zephyr west workspace (see the top-level README)
+cd /path/to/zephyrproject && source zephyr/zephyr-env.sh
+west build -b hantek_2d82 /path/to/awto-scope/code/app \
+  --build-dir /path/to/awto-scope/tmp/app_build
 
 # Flash (app only, bootloader untouched)
-dfu-util -a 0 -s 0x08005000:leave -D tmp/first_stage_build/zephyr/zephyr.bin
+dfu-util -a 0 -s 0x08005000:leave -D tmp/app_build/zephyr/zephyr.bin
 ```
 
 **Shell:** connect to USART1 (PA9 TX / PA10 RX, 115200 8N1) on the TTL debug header.
 
 **Verified 2026-07-14:** clean `west build` (58.32% flash used, 293808/492KB), boots to
 `supervisor: running` with a working shell prompt in Renode
-(`python3 code/renode/hantek_emu.py --binary tmp/first_stage_build/zephyr/zephyr.elf headless`).
+(`python3 code/renode/hantek_emu.py --binary tmp/app_build/zephyr/zephyr.elf headless`).
 
 ### Option B — safety review (2026-07-14, GH #157, Basalt-Query)
 
@@ -106,7 +103,7 @@ not ruled out or confirmed either way; distinguishing it from "real bootloader-p
 still requires the live capture.
 
 **Is this mystery relevant to Zephyr? No — completely irrelevant, independent of resolution.**
-`code/a2k_board`, `code/lib`, and `code/first_stage` have **no timebase-divisor-table concept
+`code/a2k_board`, `code/lib`, and `code/app` have **no timebase-divisor-table concept
 implemented at all yet**: `code/a2k_board/include/a2k_board/fpga.h` is a bare
 `fpga_write_reg`/`fpga_read_reg` register shim, and there is no reference anywhere in the Zephyr
 tree to `0x20001fc0`, `g_dat_16a0`, or any equivalent construct. Whatever this address turns out
@@ -156,7 +153,7 @@ software SHA256 — this MCU has no hardware crypto accelerator). Single-slot on
 first cut (no OTA staging slot yet — see "known gaps"): MCUboot verifies and boots
 `slot0_partition`, full stop.
 
-**Flash map** (`code/first_stage/snippets/mcuboot-hantek_2d82/boards/hantek_2d82.overlay`):
+**Flash map** (`code/app/snippets/mcuboot-hantek_2d82/boards/hantek_2d82.overlay`):
 
 | Region      | Start        | Size    |
 |-------------|-------------|---------|
@@ -169,32 +166,32 @@ uses 32028 B / 65.16% of the 48 KB budget — an earlier 32 KB budget overflowed
 during Renode build verification.)
 
 **Build** (sysbuild, `-S mcuboot-hantek_2d82`; `BOARD_ROOT`/`SNIPPET_ROOT` are required
-because `hantek_2d82` and the snippet are both out-of-tree, living under `code/first_stage/`
+because `hantek_2d82` and the snippet are both out-of-tree, living under `code/app/`
 rather than the Zephyr workspace):
 
 ```bash
-cd .
-ZEPHYR_BASE=<workspace>/esp32-zephyr/zephyr ZEPHYR_SDK_INSTALL_DIR=~/zephyr-sdk-1.0.1 \
-west build -b hantek_2d82 -d tmp/first_stage_mcuboot_build code/first_stage --sysbuild -- \
-  -DBOARD_ROOT=./code/first_stage \
-  -DSNIPPET_ROOT=./code/first_stage \
+cd /path/to/awto-scope
+ZEPHYR_BASE=/path/to/zephyrproject/zephyr ZEPHYR_SDK_INSTALL_DIR=~/zephyr-sdk-1.0.1 \
+west build -b hantek_2d82 -d tmp/app_mcuboot_build code/app --sysbuild -- \
+  -DBOARD_ROOT=./code/app \
+  -DSNIPPET_ROOT=./code/app \
   -DSNIPPET=mcuboot-hantek_2d82
 ```
 
-Produces two images: `tmp/first_stage_mcuboot_build/mcuboot/zephyr/zephyr.bin` (the
-bootloader) and `tmp/first_stage_mcuboot_build/first_stage/zephyr/zephyr.signed.bin` (the
+Produces two images: `tmp/app_mcuboot_build/mcuboot/zephyr/zephyr.bin` (the
+bootloader) and `tmp/app_mcuboot_build/app/zephyr/zephyr.signed.bin` (the
 app, ED25519-signed by imgtool automatically as part of the sysbuild).
 
 **Flash (one-time SWD install — both images):**
 ```bash
 openocd -f interface/stlink.cfg -f target/stm32f1x.cfg \
-  -c "program tmp/first_stage_mcuboot_build/mcuboot/zephyr/zephyr.bin 0x08000000 verify" \
-  -c "program tmp/first_stage_mcuboot_build/first_stage/zephyr/zephyr.signed.bin 0x0800C000 verify reset exit"
+  -c "program tmp/app_mcuboot_build/mcuboot/zephyr/zephyr.bin 0x08000000 verify" \
+  -c "program tmp/app_mcuboot_build/app/zephyr/zephyr.signed.bin 0x0800C000 verify reset exit"
 ```
 or with pyocd (this project's preferred tool — see [swd-debug.md](swd-debug.md)):
 ```bash
-pyocd flash -t stm32f103vet6 -a 0x08000000 tmp/first_stage_mcuboot_build/mcuboot/zephyr/zephyr.bin
-pyocd flash -t stm32f103vet6 -a 0x0800C000 tmp/first_stage_mcuboot_build/first_stage/zephyr/zephyr.signed.bin
+pyocd flash -t stm32f103vet6 -a 0x08000000 tmp/app_mcuboot_build/mcuboot/zephyr/zephyr.bin
+pyocd flash -t stm32f103vet6 -a 0x0800C000 tmp/app_mcuboot_build/app/zephyr/zephyr.signed.bin
 ```
 
 **Signing key:** left at MCUboot's own bundled default
@@ -202,13 +199,13 @@ pyocd flash -t stm32f103vet6 -a 0x0800C000 tmp/first_stage_mcuboot_build/first_s
 with every MCUboot checkout, same one every Zephyr MCUboot sample uses unless overridden).
 Fine for bring-up/Renode verification. Anyone shipping signed field updates for real must
 generate their own key (`imgtool keygen -k mykey.pem -t ed25519`) and override
-`SB_CONFIG_BOOT_SIGNATURE_KEY_FILE` in `code/first_stage/sysbuild.conf`.
+`SB_CONFIG_BOOT_SIGNATURE_KEY_FILE` in `code/app/sysbuild.conf`.
 
 **Verified 2026-07-14:** clean sysbuild (mcuboot: 32028/49152 B = 65.16%; app:
 294432/470880 B = 62.53%), both images link at the correct addresses (mcuboot @
 `0x08000000`, app @ `0x0800C000`, confirmed via `readelf -h`/linker MEMORY region), and the
 app image boots to `supervisor: running` with a working shell prompt in Renode
-(`python3 code/renode/hantek_emu.py --binary tmp/first_stage_mcuboot_build/first_stage/zephyr/zephyr.elf headless`
+(`python3 code/renode/hantek_emu.py --binary tmp/app_mcuboot_build/app/zephyr/zephyr.elf headless`
 — loads the app ELF directly, bypassing MCUboot's own chain-load/verify step, since Renode
 has no model of MCUboot's boot process; this confirms the app itself boots correctly at its
 MCUboot-derived link address, not that MCUboot's verify-and-jump handoff works in Renode,
@@ -220,7 +217,7 @@ which was not exercised).
   `boot_serial`/`serial_adapter` requires (a) a `mcuboot_button0` GPIO devicetree alias to
   detect the recovery-entry trigger at boot — this board has no free/traced GPIO wired up for
   that yet — and (b) `CONFIG_UART_CONSOLE=n`, since serial recovery repurposes the console
-  UART (USART1) for its own protocol, which would need first_stage's normal shell/log console
+  UART (USART1) for its own protocol, which would need app's normal shell/log console
   to coexist with or yield to it. Both are real hardware-integration decisions, not just
   Kconfig flips, so this was deliberately left for a follow-on rather than guessed at. Until
   it's wired up, **updating the app under Option C still requires SWD** — the "one-time SWD
@@ -275,5 +272,5 @@ To restore the vendor bootloader after an Option C SWD flash (going back to Opti
 openocd -f interface/stlink.cfg -f target/stm32f1x.cfg \
   -c "program vendors/hantek/2d82/firmware/bootloader/flash_08000000.bin 0x08000000 verify reset exit"
 ```
-then rebuild/reflash `first_stage` the plain (non-sysbuild) way so it goes back to linking at
+then rebuild/reflash `app` the plain (non-sysbuild) way so it goes back to linking at
 `0x08005000` — see Option B above.

@@ -16,7 +16,7 @@ Informed by:
 
 ```
 code/
-  first_stage/                <- current: minimal bring-up shell
+  app/                <- current: minimal bring-up shell
     src/main.c                <- sequential init + supervisor_run()
     boards/hantek_2d82/       <- board DTS + defconfig (real copy, not symlink)
     prj.conf
@@ -39,7 +39,7 @@ code/
       probe_comp.c            <- probe compensation GPIO output + sense
 ```
 
-**Two EXTRA_ZEPHYR_MODULES in first_stage CMakeLists.txt:**
+**Two EXTRA_ZEPHYR_MODULES in app CMakeLists.txt:**
 ```cmake
 list(APPEND EXTRA_ZEPHYR_MODULES
     ${CMAKE_CURRENT_SOURCE_DIR}/../hantek_board
@@ -198,20 +198,20 @@ bool hantek_is_renode(void) {
 | 1 | hantek_board | Scaffold: `CMakeLists.txt`, `Kconfig`, `drv.h` | none |
 | 2 | hantek_board | `supervisor.c` — msgq, types, init + run skeleton | none |
 | 2a | renode | `spi1_fix.repl` + `adc_fix.repl` + `renode_detect.repl` | none |
-| 3 | first_stage | Add both modules to CMakeLists.txt; UART log backend | none |
+| 3 | app | Add both modules to CMakeLists.txt; UART log backend | none |
 | 4 | DTS | TIM1 PWM node + `backlight` alias | none |
 | 5 | hantek_board | `backlight.c` — TIM1_CH1 PA8, `hantek_drv_t` | step 4 |
 | 6 | DTS | TIM8 PWM node + `buzzer` alias → awto_board buzzer activates | none |
 | 7 | DTS | ILI9341 FSMC node | none |
 | 8 | hantek_board | `lcd.c` — ILI9341 via FSMC, Zephyr `display` API — **see delay note** | step 7 |
 | 8a | hantek_board | `CONFIG_HANTEK_LCD_DEBUG` — `lcd_color_test()` corner blocks, Renode PNG | step 8 |
-| 8b | first_stage | CFB `CONFIG_CHARACTER_FRAMEBUFFER=y`, boot progress text on screen | step 8 |
+| 8b | app | CFB `CONFIG_CHARACTER_FRAMEBUFFER=y`, boot progress text on screen | step 8 |
 | 9 | DTS | NVS flash partition (calibration slot, 0x130 bytes) | none |
 | 10 | DTS | `gpio-kbd-matrix` node (all row/col pins confirmed) | none |
 | 11 | hantek_board | `fpga.c` — SPI1, 5 cmd types, `hantek_drv_t` | SPI1 DTS |
 | 12 | hantek_board | `awg.c` — DDS freq word, amplitude, waveform via FPGA regs | step 11 |
-| 13 | first_stage | `main.c` — full sequential init, boot progress bar via CFB | steps 1–12 |
-| 14 | first_stage | LVGL replaces CFB: `CONFIG_LVGL=y`, `lv_conf`, `lv_indev` | step 8 + step 10 |
+| 13 | app | `main.c` — full sequential init, boot progress bar via CFB | steps 1–12 |
+| 14 | app | LVGL replaces CFB: `CONFIG_LVGL=y`, `lv_conf`, `lv_indev` | step 8 + step 10 |
 | 15 | hantek_board | `battery.c` — ADC1 → mV → level → `MSG_BATTERY_LOW` | DT gate (pin unknown) |
 | 16 | hantek_board | `dmm.c` — CS7721 USART1@2400 + bit-bang | issue [#45](https://github.com/awtoau/awto-2000/issues/45) → DT gate |
 | 17 | hantek_board | `calibration.c` — NVS load/save 0x130 bytes, apply on load | step 9 |

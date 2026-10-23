@@ -277,7 +277,7 @@ frame) but correct. Benchmark in Renode first.
 
 > **Implemented (issue #125):** the actual Zephyr LVGL module (`modules/lvgl/Kconfig.memory`
 > in this Zephyr version, 4.4.99) doesn't expose an absolute-byte buffer size Kconfig —
-> only `CONFIG_LV_Z_VDB_SIZE`, a percentage of `hor_res*ver_res`. `code/first_stage/prj.conf`
+> only `CONFIG_LV_Z_VDB_SIZE`, a percentage of `hor_res*ver_res`. `code/app/prj.conf`
 > sets `CONFIG_LV_Z_VDB_SIZE=6` (≈4608px = 9216 bytes/buffer, closest percentage step to
 > the ~8KB target) with `CONFIG_LV_Z_DOUBLE_VDB=y` (2 buffers = ~18KB total — this module
 > has no static triple-buffer option). Render mode is `LV_DISPLAY_RENDER_MODE_PARTIAL`

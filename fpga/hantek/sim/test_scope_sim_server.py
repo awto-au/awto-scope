@@ -19,8 +19,8 @@ from scope_sim_server import (            # noqa: E402
     R_STATUS, R_CTRL, R_WPTRIG, R_TEDGE, R_TLEVEL, R_THYST, R_POSTDLY,
 )
 
-REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-LOG = os.path.join(REPO, "fpga", "tmp", "scope_sim_server.log")
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # fpga/hantek/
+LOG = os.path.join(REPO, "tmp", "scope_sim_server.log")
 DEPTH = 256
 
 

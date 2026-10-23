@@ -40,7 +40,7 @@ size" excludes trailing `0xFF` erased-flash padding. See the sections below for 
 |---|---|---|---|---|
 | `V02` | 2018-12 | ~43 KB | `vendors/hantek/2d72/firmware/releases/Hantek2000_FPGA(V02).zip` | Official, "good working build" |
 | `V04` | 2019-07-30 | ~43 KB | `vendors/hantek/2d72/firmware/releases/Hantek2000_FPGA(V04).zip` (`DS1302_2019071801.bin`) | Official, "good working build" — AutoUpdate can wrongly downgrade V07→V04 |
-| `V05` | ~2019 | — | not archived | "Good working build" per docs; not in repo. Hantek support redistributes only via direct email (`caiyijun@hantek.com`) per eediscuss tid=14649 |
+| `V05` | ~2019 | — | not archived | "Good working build" per docs; not in repo. Hantek support redistributes only via direct email to a staff member, per eediscuss tid=14649 |
 | `V07` | 2020-05-30 | 42,992 B | `vendors/hantek/2d82/firmware/FPGA_V07.bin` (from `FPGA_V07.zip`), `fpga/hantek/v7/FPGA_V07.bin` | Official, "good working build" — this board's FPGA ident register reads `7` (live-confirmed 2026-07-13), matching this version. **Full bitstream content unverified** — no JTAG probe available this session to extract and byte-compare the live bitstream (only the version-ident byte was read); Dan has confirmed he manually updated this board's FPGA himself at some point, so a difference (if ever found) would be expected, not a new mystery |
 | `0x0` / `255` | — | — | — | Dead / unprogrammed marker values, not real versions |
 
@@ -251,7 +251,7 @@ downloaded** — per task constraint.
 community testimony, exactly what fpga.md already documents from
 code/bitstream analysis: AutoUpdate's "Force update" **downgrades FPGA V07→V04** unprompted
 (three independent users — Alexei, Sobakin76, Igor_kamensk — report exactly this). Hantek support's
-only substantive reply to requests for the missing V05 build is to email `caiyijun@hantek.com`
+only substantive reply to requests for the missing V05 build is to email a Hantek staff member
 directly — i.e. even Hantek's own redistribution of older FPGA versions was informal/email-based,
 not a forum download. No 2D82/2D82AUTO-specific content in this thread — it only covers
 2D72/2D42/2C72/2C42, same scope as the main thread.

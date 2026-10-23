@@ -1,7 +1,7 @@
 # New-firmware USB Protocol Design — Fluke-inspired, streaming-first
 
 **STATUS: design proposal, nothing implemented.** This document specifies a protocol for the
-**clean-room Zephyr reimplementation** (`code/first_stage/`, `code/a2k_board/`, `code/lib/`) — it
+**clean-room Zephyr reimplementation** (`code/app/`, `code/a2k_board/`, `code/lib/`) — it
 is a fresh design, not a compatibility layer for existing Hantek software.
 
 **Not to be confused with** [`../hardware/usb-protocol.md`](usb-protocol.md), which

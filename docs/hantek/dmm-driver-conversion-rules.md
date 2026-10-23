@@ -5,7 +5,7 @@ These are project rules, not one-off task instructions.
 
 ## Scope
 
-- Applies to: `code/a2k_board/include/a2k_board/dmm.h`, `code/a2k_board/src/dmm.c`, and immediate DMM consumers in `code/first_stage`.
+- Applies to: `code/a2k_board/include/a2k_board/dmm.h`, `code/a2k_board/src/dmm.c`, and immediate DMM consumers in `code/app`.
 - Focus is the onboard DMM path (CS7721 frame transport + decode + typed result API).
 
 ## Rules
