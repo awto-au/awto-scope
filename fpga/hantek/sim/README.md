@@ -49,7 +49,7 @@ Two-byte request, one-byte reply — trivial so the C# bridge is a thin pipe:
 **Standalone proof (no Renode) — this is the tested path:**
 
 ```
-python3 fpga/sim/test_scope_sim_server.py
+python3 fpga/hantek/sim/test_scope_sim_server.py
 # → STATUS 0b110 (triggered+frozen), window [60,60,200,200,...], OVERALL: PASS
 ```
 
@@ -57,14 +57,14 @@ python3 fpga/sim/test_scope_sim_server.py
 
 1. Start the gateware sim server (leave it running):
    ```
-   python3 fpga/sim/scope_sim_server.py --port 42001
+   python3 fpga/hantek/sim/scope_sim_server.py --port 42001
    ```
 2. In your Renode script, load the bridge assembly and the overlay, then boot the
    STM32 machine as usual:
    ```
-   i @fpga/sim/ScopeSimBridge.cs           # or: include the compiled assembly
+   i @fpga/hantek/sim/ScopeSimBridge.cs           # or: include the compiled assembly
    # ... load your base STM32F103 platform + app.bin ...
-   machine LoadPlatformDescription @fpga/sim/scope_sim.repl
+   machine LoadPlatformDescription @fpga/hantek/sim/scope_sim.repl
    start
    ```
    The firmware's SPI1 traffic now hits the live `Aw2Gateware`.
