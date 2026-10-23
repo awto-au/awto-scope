@@ -248,7 +248,7 @@ filename still not visible pre-login. **No account was created, no login attempt
 downloaded** — per task constraint.
 
 **tid=14649 ("FPGA update", 19 unique posts, 2 pages)** independently confirms, via direct
-community testimony, exactly what [fpga.md](../../fpga/hantek/docs/fpga.md) already documents from
+community testimony, exactly what fpga.md already documents from
 code/bitstream analysis: AutoUpdate's "Force update" **downgrades FPGA V07→V04** unprompted
 (three independent users — Alexei, Sobakin76, Igor_kamensk — report exactly this). Hantek support's
 only substantive reply to requests for the missing V05 build is to email `caiyijun@hantek.com`

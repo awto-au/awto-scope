@@ -19,7 +19,7 @@ The bitstream under analysis is from the **2D82AUTO** (2000-series, 200 MHz DSO)
 | [fpga-spy.md](fpga-spy.md) | EFB/WISHBONE spy bitstream |
 | [fpga-can-mod.md](fpga-can-mod.md) | CAN bus hardware mod |
 | [fpga-db.md](fpga-db.md) | Pluribus DB schema + postgres setup |
-| [../vendors/hantek/2d82/docs/hardware/calibration.md](../../vendors/hantek/2d82/docs/hardware/calibration.md) | ADC/voltage calibration data format + flash layout |
+| ../vendors/hantek/2d82/docs/hardware/calibration.md | ADC/voltage calibration data format + flash layout |
 | [pluribus:docs/upstream-contributions.md](https://github.com/awtoau/pluribus) | Diamond toolchain notes + upstream contribution plan (prjtrellis/nextpnr/prjcombine) |
 
 ---
@@ -295,7 +295,7 @@ device's flash at runtime by the MCU; it only exists in a live device that has b
 **If you ever extract a live device bitstream** (via `openFPGALoader --read-flash` or
 `LSC_READ_INCR_NV` 0xCA), treat the first 784 bytes (pages 0–48) as **calibration data**,
 not bitstream logic — mark them as DATA in any disassembler/RE tool. The 0x2f8 layout is
-documented in [calibration.md](calibration.md).
+documented in calibration.md.
 
 **Reading cal data without a full bitstream dump:** Send `LSC_WRITE_ADDRESS` (0x47 + 3×0x00)
 then `LSC_READ_INCR_NV` (0xCA + 0x10 + 0x00 + 0x31) via the SSPI port (CS=PB4) to read

@@ -2,7 +2,7 @@
 
 Chip: CS7721CN-1 (Chipsea / Wuxi China Resources Semico).
 Compatible with FS9721_LP3 (Fortune Semiconductor) — same pinout, same protocol.
-Datasheets: [CS7721 2-page EN](../../ics/CS7721-datasheet-EN.pdf) | [FS9721_LP3 full 32-page EN](../../ics/FS9721_LP3-datasheet-EN.pdf)
+Datasheets: CS7721 2-page EN | FS9721_LP3 full 32-page EN
 
 ---
 

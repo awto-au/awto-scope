@@ -2,7 +2,7 @@
 
 Derived from decompiled OEM firmware (`decompiled_named.c`) and `ghidra_names_2d82.tsv`.
 
-For SPI register writes used during calibration (REG 0x0a/0x0c vertical offset DAC) see [fpga-spi.md](../../fpga/hantek/docs/fpga-spi.md).  
+For SPI register writes used during calibration (REG 0x0a/0x0c vertical offset DAC) see fpga-spi.md.  
 For the USB protocol that transfers calibration data from PC see [usb-protocol.md](usb-protocol.md).
 
 ---
@@ -333,7 +333,7 @@ Traced `fw_cali_capture_samples` @ `0x0801e314` (the function that applies the c
 to live captured samples) end-to-end: every SPI transaction in its body — 7 call sites, all
 `fw_spi_sendrecv(0xff)` — is a raw ADC sample byte being clocked out of the FPGA's burst-read
 shift path (dummy `0xff` written to receive one byte back, the same idiom documented for the
-`0xa4` bank in [fpga-spi.md](../../fpga/hantek/docs/fpga-spi.md)). **No `fw_fpga_*()` register-write function is called
+`0xa4` bank in fpga-spi.md). **No `fw_fpga_*()` register-write function is called
 anywhere in this function.** The gain/offset math —
 ```
 scaled = (raw_byte - voffset_baseline - 0x80) * volt_cali_gain_float
@@ -424,7 +424,7 @@ on this unit.
 
 Beyond the runtime `0xa8`/`0xc8` register banks, calibration data is *also* mirrored into the
 FPGA's own non-volatile configuration memory (Lattice MachXO2 NVCM, programmed via the ISC
-protocol documented in [fpga-spi.md §5b](../../fpga/hantek/docs/fpga-spi.md)) — a completely separate mechanism from
+protocol documented in fpga-spi.md §5b) — a completely separate mechanism from
 both the STM32-internal flash blocks and the runtime SPI register writes.
 
 - **`fw_fpga_write_config(sel)`** @ `0x08016c70` — `fw_calibrate` calls this with `sel=0`

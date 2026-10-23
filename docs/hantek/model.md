@@ -165,7 +165,7 @@ divisor), REG 0x17 (trigger edge), REG 0x18 (AWG DDS increment). Full map: [fpga
 - 2-channel skew measurement — ENCA/ENCB phase offset vs fabric pipeline latency
 
 Previously-unknown FPGA output pads 3/4/60/61/99 are now resolved by cone-size
-fingerprinting (full analysis: [../../fpga/hantek/docs/v07-fabric-datapath.md](../../fpga/hantek/docs/v07-fabric-datapath.md)).
+fingerprinting (full analysis: ../../fpga/hantek/docs/v07-fabric-datapath.md).
 Destinations still want a physical board trace to fully confirm:
 
 - **pin60** — AWG-datapath fabric output; most plausibly the AWG output-amp enable/mute

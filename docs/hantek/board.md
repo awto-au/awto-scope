@@ -117,7 +117,7 @@ USB FS requires exactly 48 MHz. The APM32F103 supports more USB clock divider ch
   JTAG (openFPGALoader) or the DFU path. A CAN decoder (~500 LUTs) fits the 1280-LUT
   part with room to spare.
 
-## LCD -- ILI9341 over FSMC [V] (see [lcd-connection.md](../renode/lcd-connection.md))
+## LCD -- ILI9341 over FSMC [V] (see lcd-connection.md)
 - **Controller = ILI9341** (confirmed: the panel returns ID 0x9341 to the 0xD3
   "Read ID4" command). 240x320, 16-bit parallel.
 - **Bus = FSMC Bank1** (8080-style), memory-mapped: cmd @0x60000000 (RS=0),
@@ -183,7 +183,7 @@ estimate of the actual analog output chain (3PD5651E DAC -> op-amp -> BNC):
 - C-models (2C42/2C72) likely have the DAC + amp **unpopulated** -- check the board
   before assuming AWG output exists.
 
-## Keypad -- 5x4 scanned matrix [V] (see [key-matrix.md](../renode/key-matrix.md))
+## Keypad -- 5x4 scanned matrix [V] (see key-matrix.md)
 - **Columns (read inputs, pulled-up):** PB6, PB5, PC6, PB12
 - **Rows (driven low one at a time):** PD13, PD12, PC3, PB14, PB13
 - 20 keys total. `F1 + Power` at boot = DFU entry.

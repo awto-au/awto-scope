@@ -7,12 +7,12 @@ Cross-reference: [lucaoli/Hantek](https://github.com/lucaoli/Hantek) (same VID/P
 Cross-reference: [hkoosha/hanteker](https://github.com/hkoosha/hanteker) (Rust client, same VID:PID
 `0x0483:0x2d42`) — independently confirms `IDX=0x00`, `BOH=0x0A`, `AWG_VAL_TYPE_SIN=0x02`, and
 distinguishes `TriggerSweep` NORMAL(1)/SINGLE(2) as separate values (see `trigger.md`).  
-Cross-reference: [MCU↔FPGA SPI protocol](../../fpga/hantek/docs/fpga-spi.md) — the firmware side of every USB command.
+Cross-reference: MCU↔FPGA SPI protocol — the firmware side of every USB command.
 
 **This document is the OLD/vendor protocol** (RE'd from the existing Hantek firmware/app, for
 interoperability and RE reference). For the **NEW clean-room Zephyr firmware's** protocol design
 — a fresh, Fluke/SCPI-inspired, streaming-first replacement, not compatible with this one — see
-[`../firmware/usb-protocol-design.md`](../firmware/usb-protocol-design.md).
+[`../firmware/usb-protocol-design.md`](usb-protocol-design.md).
 
 ---
 
@@ -161,7 +161,7 @@ The device status response (`00 00 03 03 01`) has no `0x55` header — format di
 ## FPGA Reprogram Sequence (bank `0x03`, cmd `0x02`/`0x03`/`0x04`)
 
 Sent only by `dsoUpdateFPGA` (`HTHardDll.dll` export, gated behind a magic-tagged caller argument —
-see [app.md](../app/app.md) "FPGA Update" for the full app-side trace). Full byte-level trace done
+see [app.md](app.md) "FPGA Update" for the full app-side trace). Full byte-level trace done
 2026-07-13 by static disassembly of `HTHardDll.dll`; cross-referenced against the firmware-side
 `fw_usb_cali_write_handler` sub-commands already documented in `vendors/hantek/2d82/ghidra/ghidra_names_2d82.tsv`
 — confirmed exact match, no discrepancies.
@@ -562,4 +562,4 @@ implements the request.
 
 ---
 
-DLL export list, Wine setup, and app files: [app.md](../app/app.md).
+DLL export list, Wine setup, and app files: [app.md](app.md).

@@ -23,7 +23,7 @@ code (`0x0000`-`0x342F`); the only difference in the whole `0x5000` region is `0
 vs `0xFF` erased flash in the unused tail. A generic Hantek2000-family recovery image and
 a 2D82 pulled off real hardware run the same bootloader binary — so the bootloader carries
 no per-model difference. See
-[`../docs/hardware/unlock.md`](../docs/hardware/unlock.md) for what that rules out.
+[`../docs/hardware/unlock.md`](unlock.md) for what that rules out.
 
 ## ghidra/
 Headless Ghidra 12.2 export (`-processor ARM:LE:32:Cortex`, base 0x08005000):

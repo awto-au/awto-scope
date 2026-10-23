@@ -191,7 +191,7 @@ openocd -f interface/stlink.cfg -f target/stm32f1x.cfg \
   -c "program tmp/first_stage_mcuboot_build/mcuboot/zephyr/zephyr.bin 0x08000000 verify" \
   -c "program tmp/first_stage_mcuboot_build/first_stage/zephyr/zephyr.signed.bin 0x0800C000 verify reset exit"
 ```
-or with pyocd (this project's preferred tool — see [swd-debug.md](../hardware/swd-debug.md)):
+or with pyocd (this project's preferred tool — see [swd-debug.md](swd-debug.md)):
 ```bash
 pyocd flash -t stm32f103vet6 -a 0x08000000 tmp/first_stage_mcuboot_build/mcuboot/zephyr/zephyr.bin
 pyocd flash -t stm32f103vet6 -a 0x0800C000 tmp/first_stage_mcuboot_build/first_stage/zephyr/zephyr.signed.bin

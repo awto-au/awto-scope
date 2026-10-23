@@ -254,7 +254,7 @@ Stored in FPGA EBR tile R6C20 (PDPW8KC, 18-bit × 512).
 > (`fw_fpga_read_samples_full`, the full 0x1800/6144-byte whole-capture burst described here) and
 > `0x0801fc04` (`fw_fpga_read_samples_windowed`, wraps `fw_scope_spi_read_samples` for the live-view
 > display path's smaller 0x4b0-sample windowed reads). Full disambiguation:
-> [vendors/hantek/2d82/docs/hardware/waveform-readback.md](../../vendors/hantek/2d82/docs/hardware/waveform-readback.md) §1.
+> vendors/hantek/2d82/docs/hardware/waveform-readback.md §1.
 
 **Wire protocol:**
 ```
@@ -282,7 +282,7 @@ After calibration: `corrected = clamp(raw − zero_offset − 0x80, 0, 0xFF)`
 > **MCU-side call chain and USB-side packet format** (how these bytes get from `g_ch1_samples`/
 > `g_ch2_samples` into a USB response, plus the separate live-view display read path that uses the
 > identical wire command) are traced in
-> [vendors/hantek/2d82/docs/hardware/waveform-readback.md](../../vendors/hantek/2d82/docs/hardware/waveform-readback.md).
+> vendors/hantek/2d82/docs/hardware/waveform-readback.md.
 
 ---
 

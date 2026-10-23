@@ -1,7 +1,7 @@
 # FPGA self-calibration — rationale and measured results
 
 Records the **validation evidence** for the replacement-RTL self-calibration blocks.
-The code lives in [`../rtl/`](../rtl/) and the design intent is in
+The code lives in `../rtl/` and the design intent is in
 [`fpga-redesign-plan.md`](fpga-redesign-plan.md); what was missing was the measured
 justification — *why* these blocks exist and what they were shown to achieve.
 
@@ -27,7 +27,7 @@ uncalibrated ADC-sample source:
   offset DAC code (`REG 0x0a` / `0x0c`).
 
 Consistent with
-[`../../../vendors/hantek/2d82/docs/hardware/calibration-process.md`](../../../vendors/hantek/2d82/docs/hardware/calibration-process.md),
+[`../../../vendors/hantek/2d82/docs/hardware/calibration-process.md`](calibration-process.md),
 which records that everything beyond the DC offset is MCU-side software correction
 applied at capture time.
 

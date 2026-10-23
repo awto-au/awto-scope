@@ -205,7 +205,7 @@ Read carefully, this **strengthens** the conclusion above rather than complicati
   where the string genuinely is absent. Both are true; I had conflated them.
 
   Full detail:
-  [`calibration.md`](calibration.md#the-voltage-cal-block-also-carries-the-per-unit-serial--and-that-sets-the-model-name).
+  [`calibration.md`](hardware-calibration.md#the-voltage-cal-block-also-carries-the-per-unit-serial--and-that-sets-the-model-name).
   The lesson stands: trace the whole chain before claiming an effect — including where the input
   comes from.
 - The `"XX"` fallback is the tell: an unrecognised model string yields `2DXX` instead of failing.
@@ -264,7 +264,7 @@ Combined with everything else ruled out — the divisor table is byte-identical 
 option bytes/OTP are never read, there is no ADC strap, and the BW-limit bit defaults off
 with no model test — the only per-model store found anywhere is the **serial string in
 the per-unit calibration page** (see
-[`calibration.md`](calibration.md#the-voltage-cal-block-also-carries-the-per-unit-serial--and-that-sets-the-model-name)),
+[`calibration.md`](hardware-calibration.md#the-voltage-cal-block-also-carries-the-per-unit-serial--and-that-sets-the-model-name)),
 and that feeds a display label.
 
 ### Calibration flash as a hidden limiter — ruled out
@@ -280,7 +280,7 @@ gaps would be destroyed on the first cal save. The 24-byte gap at `+0x1e8..+0x1f
 is zeroed on every write and silently discarded on every read.
 
 The 0x2f8 block has **no field that is simultaneously (a) readable by firmware and (b) never
-overwritten by normal firmware operation**. See [calibration.md](../firmware/calibration.md) §1c
+overwritten by normal firmware operation**. See [calibration.md](firmware-calibration.md) §1c
 for the code-level proof.
 
 ---
@@ -295,7 +295,7 @@ have not been fully closed:
    Read by `0x08014ac4` in the 2D72 firmware → SRAM `0x2000cb9c`. Format unknown. On the known
    consumer SWD dump this region is 0xFF (erased). A factory-programmed 2D42 unit might have
    non-0xFF data here that the firmware acts on. The read function and its callers have not been
-   fully traced. See [calibration.md](../firmware/calibration.md) §Factory flash slot.
+   fully traced. See [calibration.md](firmware-calibration.md) §Factory flash slot.
 
 2. **AFE board hardware differences**
    The 2D42/2D72 distinction may be purely the analogue frontend board (opamp bandwidth, input

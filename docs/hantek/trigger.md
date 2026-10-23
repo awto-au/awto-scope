@@ -3,7 +3,7 @@
 This document describes the trigger system from the code perspective: the SPI register writes the MCU
 sends to the FPGA, the arm/poll cycle, boot defaults, and what is still unknown.
 
-For the general SPI framing and register map see [fpga-spi.md](../../fpga/hantek/docs/fpga-spi.md).  
+For the general SPI framing and register map see fpga-spi.md.  
 For the PC→MCU USB commands that initiate trigger configuration see [usb-protocol.md](usb-protocol.md).
 
 ---
@@ -233,7 +233,7 @@ These are the values written at first init (cold boot / factory state):
 |------|-----|-------|---------|
 | 14 | REG 0x02 | `0x01` | Edge trigger, DC coupling, AWG off (3 writes during init) |
 | 17 | REG 0x03 | lo=`0x76` ctr=`0x80` hi=`0x8a` | DC trigger at ADC midscale, ±10 band |
-| 18 | CTRL 0x00 | `0x07` | Arm capture (fires **before** REG 0x06/0x08/0x17 below — see full 28-step trace in [fpga-spi.md §11](../../fpga/hantek/docs/fpga-spi.md)) |
+| 18 | CTRL 0x00 | `0x07` | Arm capture (fires **before** REG 0x06/0x08/0x17 below — see full 28-step trace in fpga-spi.md §11) |
 | 23 | REG 0x06 | `0x0c00` LE | CH1 trigger level = `0x0c00` |
 | 24 | REG 0x08 | `0x0600` LE | CH2 trigger level = `0x0600` |
 | 25 | REG 0x17 | `0x01` | Rising edge (EDGE_POL=1 confirmed) |

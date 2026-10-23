@@ -1,6 +1,6 @@
 # Calibration Process Walkthrough — 2D82AUTO
 
-Companion to [`calibration.md`](calibration.md), which documents the **data formats** (flash layout,
+Companion to [`calibration.md`](hardware-calibration.md), which documents the **data formats** (flash layout,
 cal buffers, FPGA registers, the DAC path). This doc traces the **runtime process** — what actually
 runs, in call order, when the scope calibrates itself, boots, or is calibrated over USB. Every line
 number refers to `vendors/hantek/2d82/firmware/2d82-20210818/analysis/decompiled_named.c`.

@@ -4,7 +4,7 @@
 **clean-room Zephyr reimplementation** (`code/first_stage/`, `code/a2k_board/`, `code/lib/`) — it
 is a fresh design, not a compatibility layer for existing Hantek software.
 
-**Not to be confused with** [`../hardware/usb-protocol.md`](../hardware/usb-protocol.md), which
+**Not to be confused with** [`../hardware/usb-protocol.md`](usb-protocol.md), which
 documents the **existing vendor Hantek 2D82AUTO protocol** (RE'd from `HTHardDll.dll`/`Scope.exe`):
 fixed 10-byte poll/request-response packets, one command per packet, ~20 Hz main-loop poll rate,
 no true streaming — waveform data is pulled via hundreds of small repeated requests rather than
@@ -824,7 +824,7 @@ stack-version-sensitive.
 - **CDC-ACM is not a real UART** — DTR/RTS line-control state (`CONFIG_UART_LINE_CTRL`) reflects
   whether a host application has the port *open*, not whether a physical cable is plugged in
   (VBUS/enumeration state is separate — this device already tracks physical USB presence via
-  `PC2`=`USB_VBUS_SENSE`, see [`gpio-pinout.md`](../hardware/gpio-pinout.md)). Shell backends
+  `PC2`=`USB_VBUS_SENSE`, see [`gpio-pinout.md`](gpio-pinout.md)). Shell backends
   that gate output on DTR (common pattern, avoids writing into a closed terminal's buffer) need
   both checks: VBUS present AND DTR asserted, not just one.
 - **GH issue #32** ("Redirect calibration debug output from USART1 to USB CDC") is an existing,
@@ -841,7 +841,7 @@ stack-version-sensitive.
 
 ### 6.1 Existing groundwork — do not duplicate
 
-[`code/diag_gpio/src/gpio_mon.c`](../../code/diag_gpio/src/gpio_mon.c) (currently untracked, a
+`code/diag_gpio/src/gpio_mon.c` (currently untracked, a
 standalone `diag_gpio` Zephyr app) **already implements** a substantial, working piece of this:
 
 - A full STM32F103VET6 pin table (`s_pins[]`, ports A-G) with a per-pin status flag (`V`=verified/
@@ -1038,12 +1038,12 @@ typed command.
 
 ---
 
-Cross-references: [`../hardware/usb-protocol.md`](../hardware/usb-protocol.md) (vendor protocol,
+Cross-references: [`../hardware/usb-protocol.md`](usb-protocol.md) (vendor protocol,
 reference/RE material) · [`driver-design.md`](driver-design.md) (boot sequence, existing
 `usb_cdc_init()`/`usb_scope_init()` placement) · [`../reimplementation-plan.md`](
 ../reimplementation-plan.md) (peripheral list) · [`../hardware/gpio-pinout.md`](
-../hardware/gpio-pinout.md) (pin naming convention, confirmed pin roles) · [`code/diag_gpio/src/
-gpio_mon.c`](../../code/diag_gpio/src/gpio_mon.c) (existing GPIO shell command implementation this
+../hardware/gpio-pinout.md) (pin naming convention, confirmed pin roles) · `code/diag_gpio/src/
+gpio_mon.c` (existing GPIO shell command implementation this
 design extends) · [`code/a2k_board/src/backlight.c`](../../code/a2k_board/src/backlight.c)
 (existing `SHELL_CMD_REGISTER` pattern reference) · GH issue #32 "Redirect calibration debug
 output from USART1 to USB CDC" (existing open ask this design's §5 CDC-ACM shell resolves the

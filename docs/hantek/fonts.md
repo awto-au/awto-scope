@@ -64,10 +64,10 @@ Addresses, dimensions, and glyph counts: see `g_font_table`, `g_font_32px`, `g_f
 
 | ID | Symbol | Contact sheet |
 |----|--------|---------------|
-| A | `g_font_table` | [fontA.html](../../vendors/hantek/2d82/docs/fonts/fontA.html) |
-| B | `g_font_32px` | [fontB.html](../../vendors/hantek/2d82/docs/fonts/fontB.html) |
-| C | `g_font_16px` | [fontC.html](../../vendors/hantek/2d82/docs/fonts/fontC.html) |
-| D | `g_font_small` | [fontD.html](../../vendors/hantek/2d82/docs/fonts/fontD.html) |
-| E | `g_font_e` | [fontE.html](../../vendors/hantek/2d82/docs/fonts/fontE.html) |
-| S | `g_font_shape` | [shape.html](../../vendors/hantek/2d82/docs/fonts/shape.html) |
-| — | `g_navpad_bitmap` | [navpad.html](../../vendors/hantek/2d82/docs/fonts/navpad.html) |
+| A | `g_font_table` | fontA.html |
+| B | `g_font_32px` | fontB.html |
+| C | `g_font_16px` | fontC.html |
+| D | `g_font_small` | fontD.html |
+| E | `g_font_e` | fontE.html |
+| S | `g_font_shape` | shape.html |
+| — | `g_navpad_bitmap` | navpad.html |

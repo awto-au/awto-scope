@@ -1,7 +1,7 @@
 # 2000-series — Windows Application
 
 Application version: v2021-08-17. Installed from the `Setup.EXE` inside tracked
-[`vendor-tools/Hantek2000_Software.zip`](../../vendor-tools/Hantek2000_Software.zip) into a Wine
+`vendor-tools/Hantek2000_Software.zip` into a Wine
 prefix (see [Running under Wine](#running-under-wine-linux) below for how to rebuild it).
 
 ---
@@ -11,7 +11,7 @@ prefix (see [Running under Wine](#running-under-wine-linux) below for how to reb
 | File | Size | Purpose |
 |------|------|---------|
 | `Scope.exe` | 3.8 MB | Main GUI |
-| `HTHardDll.dll` | 92 KB | Hardware/USB protocol — see [usb-protocol.md](../hardware/usb-protocol.md) |
+| `HTHardDll.dll` | 92 KB | Hardware/USB protocol — see [usb-protocol.md](usb-protocol.md) |
 | `HTLANDll.dll` | 64 KB | LAN/WiFi transport (higher-level API, different protocol from `HTHardDll`) |
 | `HTDisplayDll.dll` | 88 KB | Display rendering |
 | `HTSoftDll.dll` | 84 KB | Software processing |
@@ -68,14 +68,14 @@ orange while negotiating, grey when idle, and the status bar reads `Connected` /
 
 | File | State |
 |------|-------|
-| [pcapp-dso-01.png](screens/pcapp-dso-01.png) | DSO tab, connecting |
-| [pcapp-dso-02-connected.png](screens/pcapp-dso-02-connected.png) | Connected (orange Connect dot) |
-| [pcapp-dso-03.png](screens/pcapp-dso-03.png) | Idle (grey Connect dot) |
-| [pcapp-dso-04.png](screens/pcapp-dso-04.png) | DSO tab |
-| [pcapp-dso-05-ch-onoff.png](screens/pcapp-dso-05-ch-onoff.png) | Channel ON/OFF toggled |
-| [pcapp-dso-06-trigd.png](screens/pcapp-dso-06-trigd.png) | Triggered (`Trig'D`) |
-| [pcapp-dso-07.png](screens/pcapp-dso-07.png) … [pcapp-dso-09.png](screens/pcapp-dso-09.png) | Further trigger/connection states |
-| [pcapp-dso-10-latest.png](screens/pcapp-dso-10-latest.png) | Latest captured frame |
+| pcapp-dso-01.png | DSO tab, connecting |
+| pcapp-dso-02-connected.png | Connected (orange Connect dot) |
+| pcapp-dso-03.png | Idle (grey Connect dot) |
+| pcapp-dso-04.png | DSO tab |
+| pcapp-dso-05-ch-onoff.png | Channel ON/OFF toggled |
+| pcapp-dso-06-trigd.png | Triggered (`Trig'D`) |
+| pcapp-dso-07.png … pcapp-dso-09.png | Further trigger/connection states |
+| pcapp-dso-10-latest.png | Latest captured frame |
 
 These are the **PC host application** UI, not the device's on-board LCD. For the on-board LCD, the
 Renode harness (`code/renode/hantek_emu.py render`) captures the real firmware's boot menu; walking
@@ -86,7 +86,7 @@ boot menu is unresolved — see `vendors/hantek/2d82/docs/hardware/renode-emulat
 
 ## DLL Export List (`HTHardDll.dll`)
 
-For the USB packet each export generates see [usb-protocol.md](../hardware/usb-protocol.md).
+For the USB packet each export generates see [usb-protocol.md](usb-protocol.md).
 
 ### Device lifecycle
 `dsoHTDeviceConnect`, `_dsoHTConnectType@12`, `_dsoHTSetNetinfo@12`, `_dsoGetDevPath@8`,
@@ -414,5 +414,5 @@ apply to this device) returns nothing at all, and the one real firmware file thi
   magic-tagged pointer check `ptr & 0xfff00000 == 0x56700000`, reachable only via explicit user
   action in the updater's UI per a 2026-07-13 disassembly pass — not automatic/silent).
 
-See [usb-protocol.md](../hardware/usb-protocol.md) Open Questions table (row on `ddsSDKSetOptions`)
+See [usb-protocol.md](usb-protocol.md) Open Questions table (row on `ddsSDKSetOptions`)
 for a related dead-USB-command finding from the same investigation.

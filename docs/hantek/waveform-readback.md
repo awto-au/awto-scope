@@ -3,11 +3,11 @@
 This document traces the actual bulk **ADC sample data** path: how raw waveform samples get from
 the FPGA's ring buffer into MCU RAM, and how the MCU serves them to the PC over USB. It is
 deliberately separate from [trigger.md](trigger.md) (trigger *configuration*) and
-[calibration.md](calibration.md) (calibration *tables*) — this document is about the sample bytes
+[calibration.md](hardware-calibration.md) (calibration *tables*) — this document is about the sample bytes
 themselves and their formats at each hop.
 
 For the FPGA-side SPI register map and the raw burst-read wire protocol see
-[fpga-spi.md](../../fpga/hantek/docs/fpga-spi.md) §7 — this document does not repeat that framing, it
+fpga-spi.md §7 — this document does not repeat that framing, it
 extends it with the MCU-side call chain and the USB-side packet format that fpga-spi.md does not
 cover.
 
@@ -61,7 +61,7 @@ searchability/history but is corrected in the TSV entry.
 ## 2. FPGA Wire Format (Unchanged From fpga-spi.md — Confirmed, Not Re-derived)
 
 Both paths use the exact burst-read command already documented in
-[fpga-spi.md §7](../../fpga/hantek/docs/fpga-spi.md#7-capture-data-burst-read--0xa4-bank):
+fpga-spi.md §7:
 
 ```
 CS LOW
