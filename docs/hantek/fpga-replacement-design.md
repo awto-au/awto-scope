@@ -16,7 +16,7 @@ EEPROM instead of UFM, no SRAM mode switching). A replacement starts clean.
 
 | Constraint | Source |
 |-----------|--------|
-| MachXO2-4000HC, TQFP-144 pinout fixed by PCB | board.md |
+| LCMXO2-1200HC-4TG100C (TQFP100, IDCODE 0x012BA043), pinout fixed by PCB | [board.md](board.md) |
 | ADC clock 125 MHz to ENCA/ENCB (pins 80/90) | fpga.md / PLL analysis |
 | STM32 SPI: PA4=nCS, PA5=CLK, PA6=MISO, PA7=MOSI | fpga-spi.md |
 | 17× pad pins defined (ADC data, FPGA_nCS, trigger, sync) | fpga_pins.tsv |
@@ -86,8 +86,9 @@ what coefficients the FPGA needs — these become SPI register writes at init ti
 ## SRAM configuration — multiple runtime bitstreams
 
 MachXO2 supports `SRAM_LM` (SRAM load mode) via the WISHBONE SPI master in EFB.
-A second bitstream image can be stored in UFM (User Flash Memory, 2048 × 18-bit
-in MachXO2-4000HC) and loaded into SRAM at runtime without a full power cycle.
+A second bitstream image would be stored in UFM (User Flash Memory) and loaded into
+SRAM at runtime without a full power cycle. On this part it does not fit; see the
+capacity check below.
 
 This enables distinct operating modes loaded on demand:
 
@@ -104,8 +105,10 @@ an EFB-WISHBONE register), which initiates the UFM→SRAM reload.
 
 ### UFM capacity check
 
-UFM: 2048 rows × 18 bits = 36,864 bits = 4,608 bytes per bank (2 banks = 9,216 B).
-A MachXO2-4000HC compressed bitstream is ~100 KB — this does not fit in UFM.
+- LCMXO2-1200HC internal flash, Configuration Flash + UFM combined: 0.33 Mb.
+- One uncompressed bitstream: 0.35 Mb without EBR init, 0.41 Mb with it.
+- Source: Lattice *MachXO2 Programming and Configuration Usage Guide* (July 2017), Table 2.
+- The V07 image is 42,992 B. A second image does not fit in UFM.
 
 **Practical approach:** Store bitstream images in the STM32's external SPI flash
 (or the scope's USB-accessible storage if any). The STM32 streams the bitstream
@@ -138,20 +141,18 @@ Register map (compatible with STM32 firmware polling):
 
 ---
 
-## Resource plan (MachXO2-4000HC)
+## Resource plan (LCMXO2-1200HC)
 
-| Resource | Total | Factory V07 usage | Target budget per mode |
-|----------|-------|-------------------|----------------------|
-| LUTs | 4320 | ~2243 cells (52%) | < 3500 |
-| FFs | 4320 | ~1000 FFs | < 2000 |
-| EBR (18 Kbit) | 10 | 5 used | ≤ 8 |
-| PLL | 1 | 1 | 1 |
-| EFB | 1 | unused | 1 (SPI slave) |
-| UFM | 1 | unused | 1 (future: small config store) |
-| I/O | 105 | 17 used (pads) | same |
+| Resource | Total | Factory V07 usage | Source |
+|----------|-------|-------------------|--------|
+| LUT4 | 1280 | 1138 (89%) | [fpga-redesign-plan.md](fpga-redesign-plan.md), [fpga-db.md](fpga-db.md) |
+| FFs | — | 1105 | [fpga-db.md](fpga-db.md) |
+| EBR (9 kbit) | 7 | 7 (ADC → EBR ring) | [v07-fabric-datapath.md](v07-fabric-datapath.md) |
+| Configured pads | — | 45 | [fpga-db.md](fpga-db.md) |
+| EFB | 1 | unused | candidate SPI slave |
 
-The 48% unused LUTs in V07 leave plenty of headroom. A clean EFB-based SPI
-decoder will free the ~50 FFs that V07 burns on the fabric shift register.
+- V07 leaves little headroom. The redesign budget is tight; see [fpga-redesign-plan.md](fpga-redesign-plan.md).
+- A clean EFB-based SPI decoder frees the ~50 FFs that V07 spends on the fabric shift register.
 
 ---
 
